@@ -1,0 +1,59 @@
+{
+  "Name": "Saitek Pro Flight Multi Panel",
+  "Description": "Device support for the Logitech/Saitek Pro Flight Multi Panel (PZ70). Buttons, switches, selector knob and trim wheel become OpenDeck keys and dials; LCD and button LEDs are driven by key images and a local display API.",
+  "Author": "millennIumAMbiguity",
+  "Version": "0.1.0",
+  "Icon": "assets/icon",
+  "Category": "Saitek Multi Panel",
+  "CodePathWin": "bin/win-x64/saitek-multipanel.exe",
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    },
+    {
+      "Platform": "linux"
+    }
+  ],
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "6.0"
+  },
+  "Actions": [
+    {
+      "Name": "Counter",
+      "UUID": "io.github.millenniumambiguity.saitekmultipanel.counter",
+      "Icon": "assets/counter",
+      "Tooltip": "Knob changes a number shown on the Multi Panel display",
+      "Controllers": [
+        "Encoder"
+      ],
+      "States": [
+        {
+          "Image": "assets/counter"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "pi/counter.html"
+    },
+    {
+      "Name": "System Monitor",
+      "UUID": "io.github.millenniumambiguity.saitekmultipanel.monitor",
+      "Icon": "assets/monitor",
+      "Tooltip": "Show CPU, RAM or GPU usage on the Multi Panel display",
+      "Controllers": [
+        "Encoder"
+      ],
+      "States": [
+        {
+          "Image": "assets/monitor"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "pi/monitor.html"
+    }
+  ],
+  "DeviceNamespace": "pz",
+  "CategoryIcon": "assets/icon",
+  "CodePathLin": "bin/linux-x64/saitek-multipanel"
+}

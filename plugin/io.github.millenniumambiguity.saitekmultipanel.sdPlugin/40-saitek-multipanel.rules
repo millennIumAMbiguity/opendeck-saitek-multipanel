@@ -1,0 +1,4 @@
+# Lets the logged-in user access the Saitek/Logitech Pro Flight Multi Panel (PZ70) without root.
+# Install: sudo cp 40-saitek-multipanel.rules /etc/udev/rules.d/ && sudo udevadm control --reload-rules && sudo udevadm trigger
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="06a3", ATTRS{idProduct}=="0d06", MODE="0660", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="06a3", ATTRS{idProduct}=="0d06", MODE="0660", TAG+="uaccess"

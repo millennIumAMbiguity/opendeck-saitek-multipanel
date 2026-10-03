@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>saitek-multipanel</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SelfContained>true</SelfContained>
+    <!-- Native AOT: small, fast-starting single binary. Needs the platform's C toolchain
+         (MSVC on Windows, clang on Linux) and can't cross-compile between OSes.
+         Pass -p:PublishAot=false to get a regular self-contained single-file build instead. -->
+    <PublishAot Condition="'$(PublishAot)' == ''">true</PublishAot>
+    <PublishSingleFile Condition="'$(PublishAot)' != 'true'">true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Runtime CPU cost matters more than binary size. -->
+    <OptimizationPreference>Speed</OptimizationPreference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HidSharp" Version="2.1.0" />
+    <PackageReference Include="StbImageSharp" Version="2.30.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenDeck.Sdk\OpenDeck.Sdk.csproj" />
+  </ItemGroup>
+
+</Project>

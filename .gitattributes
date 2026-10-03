@@ -1,0 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+# Must stay LF to run on Linux
+*.sh text eol=lf
+*.rules text eol=lf

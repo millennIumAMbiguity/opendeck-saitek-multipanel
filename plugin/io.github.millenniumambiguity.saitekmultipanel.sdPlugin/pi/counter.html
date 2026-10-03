@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<style>
+			body { font-family: system-ui, sans-serif; font-size: 13px; color: #ddd; background: transparent; margin: 8px; }
+			.row { display: flex; align-items: center; margin: 6px 0; gap: 8px; }
+			.row label { width: 110px; flex: none; color: #aaa; }
+			.row input, .row select { flex: 1; min-width: 0; background: #2a2a2e; color: #eee; border: 1px solid #444; border-radius: 4px; padding: 4px 6px; }
+			.hint { color: #888; font-size: 12px; margin: 10px 0 0; }
+		</style>
+		<script>
+			// Mirrors CounterConfig.Default in CounterActions.cs; shown as placeholders.
+			const DEFAULTS = [
+				{ name: "ALT", step: 100, fastStep: 1000, min: 0, max: 99999, wrap: false, digits: 0, row: "upper" },
+				{ name: "VS", step: 100, fastStep: 500, min: -9999, max: 9999, wrap: false, digits: 0, row: "lower" },
+				{ name: "IAS", step: 1, fastStep: 10, min: 0, max: 999, wrap: false, digits: 0, row: "upper" },
+				{ name: "HDG", step: 1, fastStep: 10, min: 0, max: 359, wrap: true, digits: 3, row: "upper" },
+				{ name: "CRS", step: 1, fastStep: 10, min: 0, max: 359, wrap: true, digits: 3, row: "upper" },
+			];
+			const OTHER = { name: null, step: 1, fastStep: 10, min: -9999, max: 99999, wrap: false, digits: 0, row: "upper" };
+			const NUMBERS = ["value", "step", "fastStep", "min", "max", "digits"];
+			let update = () => {};
+
+			function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, actionInfo) {
+				actionInfo = JSON.parse(actionInfo);
+				const ws = new WebSocket("ws://localhost:" + port);
+				ws.onopen = () => ws.send(JSON.stringify({ event: registerEvent, uuid }));
+
+				const column = actionInfo.payload.coordinates?.column ?? -1;
+				const onPanel = actionInfo.device.startsWith("pz-") && column >= 0 && column <= 4;
+				const d = onPanel ? DEFAULTS[column] : OTHER;
+				document.getElementById("dial").innerText = onPanel
+					? `On the ${d.name} dial: shown on the panel display when the selector is on ${d.name}${column < 2 ? " or " + (column ? "ALT" : "VS") : ""}.`
+					: "Not on a Multi Panel knob dial: value only shown as the dial title.";
+
+				for (const k of NUMBERS) if (k !== "value") document.getElementById(k).placeholder = d[k];
+				document.getElementById("wrap-default").innerText = `Default (${d.wrap ? "yes" : "no"})`;
+				document.getElementById("row-default").innerText = `Default (${d.row})`;
+				// Only the ALT/VS display has two rows; IAS/HDG/CRS show the upper row only.
+				if (!(onPanel && column <= 1)) document.getElementById("row-setting").style.display = "none";
+
+				let settings = actionInfo.payload.settings ?? {};
+				const load = (s) => {
+					for (const k of NUMBERS) {
+						const el = document.getElementById(k);
+						if (document.activeElement !== el) el.value = s[k] ?? "";
+					}
+					document.getElementById("wrap").value = s.wrap === true ? "yes" : s.wrap === false ? "no" : "";
+					document.getElementById("row").value = s.row ?? "";
+				};
+				load(settings);
+
+				// The plugin saves the value on every knob turn; keep the field live.
+				ws.onmessage = (e) => {
+					const msg = JSON.parse(e.data);
+					if (msg.event === "didReceiveSettings") {
+						settings = msg.payload.settings ?? {};
+						load(settings);
+					}
+				};
+
+				update = () => {
+					const s = {};
+					for (const k of NUMBERS) {
+						const v = document.getElementById(k).value.trim();
+						if (v !== "" && !isNaN(Number(v))) s[k] = Math.round(Number(v));
+					}
+					const wrap = document.getElementById("wrap").value;
+					if (wrap) s.wrap = wrap === "yes";
+					const row = document.getElementById("row").value;
+					if (row) s.row = row;
+					if (s.value === undefined && settings.value !== undefined) s.value = settings.value;
+					settings = s;
+					ws.send(JSON.stringify({ event: "setSettings", context: actionInfo.context, payload: s }));
+				};
+			}
+		</script>
+	</head>
+	<body>
+		<p class="hint" id="dial"></p>
+		<div class="row"><label for="value">Value</label><input id="value" type="number" oninput="update()" placeholder="0" /></div>
+		<div class="row"><label for="step">Step</label><input id="step" type="number" min="1" oninput="update()" /></div>
+		<div class="row"><label for="fastStep">Fast step</label><input id="fastStep" type="number" min="1" oninput="update()" /></div>
+		<div class="row"><label for="min">Min</label><input id="min" type="number" oninput="update()" /></div>
+		<div class="row"><label for="max">Max</label><input id="max" type="number" oninput="update()" /></div>
+		<div class="row">
+			<label for="wrap">Wrap around</label>
+			<select id="wrap" onchange="update()"><option value="" id="wrap-default"></option><option value="yes">Yes</option><option value="no">No</option></select>
+		</div>
+		<div class="row"><label for="digits">Zero-pad digits</label><input id="digits" type="number" min="0" max="5" oninput="update()" /></div>
+		<div class="row" id="row-setting">
+			<label for="row">Display row</label>
+			<select id="row" onchange="update()"><option value="" id="row-default"></option><option value="upper">Upper</option><option value="lower">Lower</option></select>
+		</div>
+		<p class="hint">Empty fields use the default shown. Fast step is used when the knob is spun quickly.</p>
+	</body>
+</html>

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/OpenDeck.Sdk/OpenDeck.Sdk.csproj" />
+  <Project Path="src/SaitekMultiPanel/SaitekMultiPanel.csproj" />
+</Solution>
